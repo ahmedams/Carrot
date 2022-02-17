@@ -3,5 +3,5 @@
 
 Demo Swagger http://92.205.60.235:8080/swagger/index.html
 
-Postman Collection https://www.getpostman.com/collections/c74bd0524ffcac1c50aa
+Postman Collection [![Run in Postman](https://run.pstmn.io/button.svg)](https://god.postman.co/run-collection/c74bd0524ffcac1c50aa?action=collection%2Fimport)
 
