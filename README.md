@@ -3,3 +3,5 @@
 
 Demo Swagger http://92.205.60.235:8080/swagger/index.html
 
+Postman Collection https://www.getpostman.com/collections/c74bd0524ffcac1c50aa
+
