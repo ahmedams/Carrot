@@ -1,16 +1,16 @@
+using Carrot.Contracts.Common;
+using Carrot.Contracts.Services;
+using Carrot.Entities;
+using Carrot.Repositories;
+using Carrot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace Carrot.API
 {
@@ -32,6 +32,43 @@ namespace Carrot.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Carrot.API", Version = "v1" });
             });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("ApiCors", builder =>
+                {
+                    builder.WithOrigins("https://localhost:8001", "http://localhost:8000");
+                    builder.AllowCredentials();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                });
+            });
+
+
+            var inMemoryDatabase = Configuration.GetValue<bool>("InMemoryDatabase", false);
+            if (inMemoryDatabase)
+            {
+                services.AddDbContext<Context>
+                (options =>
+                {
+                    options.UseInMemoryDatabase("Gateway");
+                });
+            }
+            else
+            {
+                services.AddDbContext<Context>(options =>
+                    {
+                        options.UseSqlServer(Configuration.GetConnectionString("Default"));
+                    }
+                );
+            }
+
+            services.AddScoped<RepositoryWrapper>();
+            services.AddScoped<IAccountService, AccountService>();
+            services.AddSingleton<IOktaService, OktaService>();
+
+            services.Configure<OktaConfig>(Configuration.GetSection("Okta"));
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,8 +84,9 @@ namespace Carrot.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseCors("ApiCors");
             app.UseAuthorization();
+
 
             app.UseEndpoints(endpoints =>
             {
